@@ -1,4 +1,4 @@
-class AnalyseFile {
+class DataAnalyse {
   // Analysis 1: Get current (most recent) price for each food
   def getCurrentPrices(foodData: Map[String, List[Int]]): Map[String, Int] = {
 
@@ -44,8 +44,20 @@ class AnalyseFile {
   }
 
   // Analysis 5: Compare the average values over the 2-year period of two foods selected by the user
-  def compareAverageValues(food1: String, food2: String): Unit = {
+  def getAveragePrices(food1: (String, List[Int]), food2: (String, List[Int])): Map[String, Int] = {
 
+    var foods: Map[String, Int] = Map()
+
+    foods.++(food1._1 -> getAveragePrice(food1._2))
+    foods.++(food2._1 -> getAveragePrice(food2._2))
+
+    foods
+  }
+
+  def getAveragePrice(prices: List[Int]): Int = {
+    val avg = prices.sum / prices.length
+
+    avg
   }
 
   // Analysis 6: Allow the user to input a food basket and show its total value based on the current values
