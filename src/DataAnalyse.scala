@@ -46,10 +46,10 @@ class DataAnalyse {
   // Analysis 5: Compare the average values over the 2-year period of two foods selected by the user
   def getAveragePrices(food1: (String, List[Int]), food2: (String, List[Int])): Map[String, Int] = {
 
-    var foods: Map[String, Int] = Map()
-
-    foods.++(food1._1 -> getAveragePrice(food1._2))
-    foods.++(food2._1 -> getAveragePrice(food2._2))
+    val foods = Map() {
+      food1._1 -> getAveragePrice(food1._2)
+      food2._1 -> getAveragePrice(food2._2)
+    }
 
     foods
   }
