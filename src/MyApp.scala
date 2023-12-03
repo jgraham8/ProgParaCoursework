@@ -1,5 +1,6 @@
 import scala.annotation.tailrec
 
+//noinspection ScalaWeakerAccess
 object MyApp extends App {
 
   val mapdata = ReadFile("data.txt")
@@ -43,34 +44,27 @@ object MyApp extends App {
     println("\r\n--------\r\n")
 
     choice match {
-      case "1" => {
+      case "1" =>
         println("Current Prices\r\n")
         DisplayCurrentPrices(GetCurrentPrices(mapdata))
-      }
-      case "2" => {
+      case "2" =>
         println("Min Max Prices\r\n")
         DisplayMinMax(GetMinMaxPrices(mapdata))
-      }
-      case "3" => {
+      case "3" =>
         println("Median Prices\r\n")
         DisplayMedian(GetMedianPrices(mapdata))
-      }
-      case "4" => {
+      case "4" =>
         println("Rising Food\r\n")
         DisplayRising(GetRisingFoods(mapdata))
-      }
-      case "5" => {
+      case "5" =>
         println("Compare Average\r\n")
         AvgMenu(mapdata)
-      }
-      case "6" => {
+      case "6" =>
         println("Basket Menu\r\n")
-        BasketMenu(mapdata)
-      }
-      case "7" => {
+        BasketMenu(GetCurrentPrices(mapdata))
+      case "7" =>
         println("Exiting...")
         System.exit(0)
-      }
       case _ => println("Incorrect Selection")
     }
 
@@ -193,48 +187,19 @@ object MyApp extends App {
 
     DisplayAvgMenuOptions(foodnames, 1)
 
-    val choice1 = GetAvgMenuInput(foodnames.length) - 1
+    val choice1 = GetMenuInput(foodnames.length) - 1
 
     DisplayAvgMenuOptions(foodnames, 1)
 
-    val choice2 = GetAvgMenuInput(foodnames.length) - 1
+    val choice2 = GetMenuInput(foodnames.length) - 1
 
     val choice1Tuple: (String, List[Int]) = foodnames(choice1) -> foodData.get(foodnames(choice1)).head
     val choice2Tuple: (String, List[Int]) = foodnames(choice2) -> foodData.get(foodnames(choice2)).head
     val avgPrices = GetAveragePrices(choice1Tuple, choice2Tuple).splitAt(1)
 
-    var dif = 0
-    if (avgPrices._1.head._2 > avgPrices._2.head._2){
-      dif = avgPrices._1.head._2 - avgPrices._2.head._2
-    } else {
-      dif = avgPrices._2.head._2 - avgPrices._1.head._2
-    }
+    val dif = (avgPrices._1.head._2 - avgPrices._2.head._2).abs
 
     println(f"${avgPrices._1.head._1}: Avg = £${avgPrices._1.head._2.toFloat / 100f}%1.2f | ${avgPrices._2.head._1} Avg = £${avgPrices._2.head._2.toFloat / 100f}%1.2f | There is a difference of £${dif.toFloat / 100f}%1.2f")
-  }
-
-  def GetAvgMenuInput(optionSize: Int): Int = {
-    var choice = ""
-    print("Enter your choice: ")
-    choice = scala.io.StdIn.readLine()
-
-    try{
-      val choiceInt = choice.toInt
-
-      if (choiceInt > optionSize || choiceInt < 1) {
-        println("Incorrect Selection")
-        GetAvgMenuInput(optionSize)
-      }
-
-      return choiceInt
-
-    }
-    catch {
-      case e: Exception => {
-        println("Incorrect Selection")
-        GetAvgMenuInput(optionSize)
-      }
-    }
   }
 
   @tailrec
@@ -245,29 +210,37 @@ object MyApp extends App {
 
     val current = foodNames.head
 
-    println(f"${i}. ${current}")
+    println(f"$i. $current")
 
     DisplayAvgMenuOptions(foodNames.filterNot(f => f == current), i+1)
   }
 
   // Analysis 5: Compare the average values over the 2-year period of two foods selected by the user
   def GetAveragePrices(food1: (String, List[Int]), food2: (String, List[Int])): Map[String, Int] = {
-
-    val foods = Map(food1._1 -> GetAveragePrice(food1._2), food2._1 -> GetAveragePrice(food2._2))
-
-    foods
+    Map(food1._1 -> GetAveragePrice(food1._2), food2._1 -> GetAveragePrice(food2._2))
   }
 
   def GetAveragePrice(prices: List[Int]): Int = {
-    val avg = prices.sum / prices.length
-
-    avg
+    prices.sum / prices.length
   }
   //endregion
 
   //region Item Basket
-  def BasketMenu(foodData: Map[String, List[Int]]): Unit = {
+  def BasketMenu(foodData: Map[String, Int]): Unit = {
 
+  }
+
+  @tailrec
+  def DisplayBasketMenuOptions(foodData: Map[String, Int], i: Int): Unit = {
+    if (foodData.isEmpty) {
+      return
+    }
+
+    val current = foodData.head
+
+    println(f"$i. $current")
+
+    DisplayBasketMenuOptions(foodData.filterNot(f => f == current), i + 1)
   }
 
   // Analysis 6: Allow the user to input a food basket and show its total value based on the current values
@@ -278,4 +251,27 @@ object MyApp extends App {
   }
   //endregion
 
+
+  def GetMenuInput(optionSize: Int): Int = {
+    var choice = ""
+    print("Enter your choice: ")
+    choice = scala.io.StdIn.readLine()
+
+    try {
+      val choiceInt = choice.toInt
+
+      if (choiceInt > optionSize || choiceInt < 1) {
+        println("Incorrect Selection")
+        GetMenuInput(optionSize)
+      }
+
+      choiceInt
+
+    }
+    catch {
+      case e: Exception =>
+        println("Incorrect Selection")
+        GetMenuInput(optionSize)
+    }
+  }
 }
