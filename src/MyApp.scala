@@ -228,6 +228,7 @@ object MyApp extends App {
   //region Item Basket
   def BasketMenu(foodData: Map[String, Int]): Unit = {
 
+    //val total = CalculateBasketTotal()
   }
 
   @tailrec
@@ -261,7 +262,7 @@ object MyApp extends App {
       val choiceInt = choice.toInt
 
       if (choiceInt > optionSize || choiceInt < 1) {
-        println("Incorrect Selection")
+        println(s"Selection must be between 1 - $optionSize")
         GetMenuInput(optionSize)
       }
 
@@ -270,7 +271,30 @@ object MyApp extends App {
     }
     catch {
       case e: Exception =>
-        println("Incorrect Selection")
+        println("Selection must be an integer")
+        GetMenuInput(optionSize)
+    }
+  }
+
+  def GetQuantity(): Int = {
+    var choice = ""
+    print("Enter the Amount: ")
+    choice = scala.io.StdIn.readLine()
+
+    try {
+      val choiceInt = choice.toInt
+
+      if (choiceInt < 1) {
+        println("Quantity must be greater than 1")
+        GetMenuInput(optionSize)
+      }
+
+      choiceInt
+
+    }
+    catch {
+      case e: Exception =>
+        println("Quantity must be an integer")
         GetMenuInput(optionSize)
     }
   }
