@@ -81,7 +81,7 @@ object MyApp extends App {
 
     val current = foodData.head
 
-    println(f"${current._1} = £${current._2.toFloat / 100f}%1.2f")
+    println(f"${current._1} = £${current._2.toDouble / 100f}%1.2f")
 
     DisplayCurrentPrices(foodData.filterNot(f => f._1 == current._1))
   }
@@ -107,7 +107,7 @@ object MyApp extends App {
 
     val current = foodData.head
 
-    println(f"${current._1}: Max = £${current._2._1.toFloat / 100f}%1.2f | Min = £${current._2._2.toFloat / 100f}%1.2f")
+    println(f"${current._1}: Max = £${current._2._1.toDouble / 100f}%1.2f | Min = £${current._2._2.toDouble / 100f}%1.2f")
 
     DisplayMinMax(foodData.filterNot(f => f._1 == current._1))
   }
@@ -135,7 +135,7 @@ object MyApp extends App {
 
     val current = foodData.head
 
-    println(f"${current._1} = £${current._2.toFloat / 100f}%1.2f")
+    println(f"${current._1} = £${current._2.toDouble / 100f}%1.2f")
 
     DisplayMedian(foodData.filterNot(f => f._1 == current._1))
   }
@@ -161,7 +161,7 @@ object MyApp extends App {
       println("No Rise Found")
     }
 
-    println(f"${max._1}: rose by £${max._2.toFloat / 100f}%1.2f")
+    println(f"${max._1}: rose by £${max._2.toDouble / 100f}%1.2f")
   }
   // Analysis 4: Get the symbol for the food which has risen most over the last 6 months
   def GetRisingFoods(foodData: Map[String, List[Int]]): Map[String, Int] = {
@@ -183,23 +183,47 @@ object MyApp extends App {
 
   //region Avg
   def AvgMenu(foodData: Map[String, List[Int]]): Unit = {
-    val foodnames = foodData.keys.toList
+    val foodNames = foodData.keys.toList
 
-    DisplayAvgMenuOptions(foodnames, 1)
+    DisplayAvgMenuOptions(foodNames, 1)
 
-    val choice1 = GetMenuInput(foodnames.length) - 1
+    val choice1 = GetMenuInput(foodNames.length) - 1
 
-    DisplayAvgMenuOptions(foodnames, 1)
+    DisplayAvgMenuOptions(foodNames, 1)
 
-    val choice2 = GetMenuInput(foodnames.length) - 1
+    val choice2 = GetMenuInput(foodNames.length) - 1
 
-    val choice1Tuple: (String, List[Int]) = foodnames(choice1) -> foodData.get(foodnames(choice1)).head
-    val choice2Tuple: (String, List[Int]) = foodnames(choice2) -> foodData.get(foodnames(choice2)).head
+    val choice1Tuple: (String, List[Int]) = foodNames(choice1) -> foodData.get(foodNames(choice1)).head
+    val choice2Tuple: (String, List[Int]) = foodNames(choice2) -> foodData.get(foodNames(choice2)).head
     val avgPrices = GetAveragePrices(choice1Tuple, choice2Tuple).splitAt(1)
 
     val dif = (avgPrices._1.head._2 - avgPrices._2.head._2).abs
 
-    println(f"${avgPrices._1.head._1}: Avg = £${avgPrices._1.head._2.toFloat / 100f}%1.2f | ${avgPrices._2.head._1} Avg = £${avgPrices._2.head._2.toFloat / 100f}%1.2f | There is a difference of £${dif.toFloat / 100f}%1.2f")
+    println(f"${avgPrices._1.head._1}: Avg = £${avgPrices._1.head._2.toDouble / 100f}%1.2f | ${avgPrices._2.head._1} " +
+            f"Avg = £${avgPrices._2.head._2.toDouble / 100f}%1.2f | There is a difference of £${dif.toDouble / 100f}%1.2f")
+  }
+
+  def GetMenuInput(optionSize: Int): Int = {
+    var choice = ""
+    print("Enter your choice: ")
+    choice = scala.io.StdIn.readLine()
+
+    try {
+      val choiceInt = choice.toInt
+
+      if (choiceInt > optionSize || choiceInt < 1) {
+        println(s"Selection must be between 1 - $optionSize")
+        return GetMenuInput(optionSize)
+      }
+
+      choiceInt
+
+    }
+    catch {
+      case e: Exception =>
+        println("Selection must be an integer")
+        return GetMenuInput(optionSize)
+    }
   }
 
   @tailrec
@@ -227,75 +251,77 @@ object MyApp extends App {
 
   //region Item Basket
   def BasketMenu(foodData: Map[String, Int]): Unit = {
+    DisplayBasketMenuOptions(foodData, 1)
 
-    //val total = CalculateBasketTotal()
+    val items = GetBasketItems(foodData, Map.empty[String, (Int, Double)])
+
+    println(f"Total is £${CalculateBasketTotal(items)}%1.2f")
   }
 
   @tailrec
   def DisplayBasketMenuOptions(foodData: Map[String, Int], i: Int): Unit = {
     if (foodData.isEmpty) {
+      println(f"$i. Checkout")
       return
     }
 
     val current = foodData.head
 
-    println(f"$i. $current")
+    println(f"$i. ${current._1} £${current._2.toDouble / 100f}%1.2f")
 
     DisplayBasketMenuOptions(foodData.filterNot(f => f == current), i + 1)
   }
 
+  @tailrec
+  def GetBasketItems(foodData: Map[String, Int], selectedFoods: Map[String, (Int, Double)]): Map[String, (Int, Double)] = {
+    val foodNames = foodData.keys.toList
+
+    var selectedPos = GetMenuInput(foodData.size + 1) - 1
+
+    if (selectedPos == foodData.size){
+      if (selectedFoods.isEmpty){
+        println("Basket is empty, add items to basket to checkout")
+        selectedPos = GetMenuInput(foodData.size + 1)
+      }
+      return selectedFoods
+    }
+
+    val selectedItem = foodData.filter(f => f._1 == foodNames(selectedPos)).head
+
+    val item = (selectedItem._1, (selectedItem._2, GetQuantityInput()))
+
+    GetBasketItems(foodData, selectedFoods + item)
+  }
+
   // Analysis 6: Allow the user to input a food basket and show its total value based on the current values
-  def CalculateBasketTotal(basket: Map[String, Double]): Double = {
+  def CalculateBasketTotal(basket: Map[String, (Int, Double)]): Double = {
+    var total: Double = 0.00
+    basket.foreach(f => total = total + (f._2._2 * f._2._1).toDouble)
 
-
-    0.0 // Placeholder value
+    total / 100
   }
   //endregion
 
-
-  def GetMenuInput(optionSize: Int): Int = {
+  def GetQuantityInput(): Double = {
     var choice = ""
-    print("Enter your choice: ")
+    print("Enter the Amount (KG/L): ")
     choice = scala.io.StdIn.readLine()
 
     try {
-      val choiceInt = choice.toInt
+      val choiceDouble = choice.toDouble
 
-      if (choiceInt > optionSize || choiceInt < 1) {
-        println(s"Selection must be between 1 - $optionSize")
-        GetMenuInput(optionSize)
+      if (choiceDouble <= 0.00) {
+        println("Quantity must be greater than 0.00")
+        GetQuantityInput()
       }
 
-      choiceInt
+      choiceDouble
 
     }
     catch {
       case e: Exception =>
-        println("Selection must be an integer")
-        GetMenuInput(optionSize)
-    }
-  }
-
-  def GetQuantity(): Int = {
-    var choice = ""
-    print("Enter the Amount: ")
-    choice = scala.io.StdIn.readLine()
-
-    try {
-      val choiceInt = choice.toInt
-
-      if (choiceInt < 1) {
-        println("Quantity must be greater than 1")
-        GetMenuInput(optionSize)
-      }
-
-      choiceInt
-
-    }
-    catch {
-      case e: Exception =>
-        println("Quantity must be an integer")
-        GetMenuInput(optionSize)
+        println("Quantity must be a Double ")
+        GetQuantityInput()
     }
   }
 }
