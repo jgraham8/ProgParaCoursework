@@ -2,7 +2,6 @@ import scala.annotation.tailrec
 
 //noinspection ScalaWeakerAccess
 object MyApp extends App {
-
 	val mapdata = ReadFile("data.txt")
 
 	MainMenu()
